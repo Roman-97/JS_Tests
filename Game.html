@@ -1,0 +1,329 @@
+﻿<!DOCTYPE html>
+<head>
+<title>Remove Blocks</title>
+<meta charset='utf-8'/>
+<link rel="stylesheet" media="all" href="../RemoveBlocks/bootstrap.css" />
+
+	
+<style >
+
+input
+{
+text-align:center;
+border:3px solid black;
+}
+label 
+{
+  display: inline-block;
+  margin-bottom: .8rem;
+}
+
+#start
+{
+
+margin-left:70px;
+}
+#_New_Game
+{
+
+ margin-left:370px;
+ margin-right:95px;
+}
+
+#pts
+{
+margin-right:120px;
+
+}
+h1
+{
+text-align:center;
+}
+
+input[type=button],[type=submit]
+{
+width:150px;
+height:25px;
+    background: #98FB98; 
+    border:3px solid black;
+    cursor:pointer;
+    -webkit-border-radius: 8px;
+    border-radius: 10px; 
+    text-align:center;
+    outline:none;
+}
+.field
+{
+ background:#1E90FF;
+width:780px;
+height:520px;
+border:2px solid #000;
+margin-top:10px;
+float:left;
+margin-left:30px;
+margin-right:30px;
+}
+
+#record
+{
+width:300px;
+height:520px;
+border:2px solid #000;
+margin-top:10px;
+margin-right:70px;
+margin-left:880px;
+font-size:32px;
+text-align:center;
+}
+
+.buttons
+{
+float:left;
+margin-left:10px;
+display:inline-break;
+}
+.info
+{
+float:center;
+}
+
+#EnterName
+{
+width:635px;
+height:430px;
+border:4px solid #000;
+z-index:1;
+position:absolute;
+background-color:white;
+margin-left:280px;
+margin-top:60px;
+-webkit-border-radius: 20px;
+border-radius: 20px; 
+visibility:hidden;
+}
+
+#GameOver
+{
+font-size:32px;
+margin-left:4px;
+text-align:center;
+}
+
+#result,#YourNameLabel,#YourNameText,#SaveName
+{
+ font-size:32px;
+ margin-top:60px;
+ margin-left:15px;
+}
+
+#SaveName
+{
+  margin-left:255px;
+}
+</style>
+<script type="text/javascript">
+'use strict'
+
+				
+var points=0; //Кол-во очков игрока
+var seconds = 60; //Время (в секундах)
+
+var NamelessPlayerCount=0;//Количество безымянных игроков
+var Color=["red","green","blue"]; //Цвета кубиков
+var Removed=new Array(); //Массив "убранных кубиков"
+
+function Start()//Начало Игры
+{
+
+  var StartPause=document.getElementById("start");
+  
+  if(StartPause.value=="Старт") // Старт
+   {
+       StartPause.value="Пауза";
+       var gameField=document.getElementById('field_id');
+       for(var i=0;i<150;i++) //Создаём кубики
+       {
+        var newBlock = document.createElement('button');
+        newBlock.id="block"+(i+1);
+	      newBlock.onclick=function(){Click(this.id);};
+        newBlock.style.backgroundColor=Color[Math.round(Math.random()*2)];
+	      newBlock.style.width="52px";
+        newBlock.style.height="52px";
+        newBlock.style.border="2px solid white";
+        newBlock.style.fontWeight="normal";
+        newBlock.style.outline="none";
+	      newBlock.style.float="left";
+	      gameField.appendChild(newBlock);
+       }
+       seconds=60;
+       Timer(); // Включаем таймер
+   }
+   else 
+   {
+       if(StartPause.value=="Продолжить") // Продолжить
+       {
+          StartPause.value="Пауза";
+       }
+       else // Пауза
+       {
+         StartPause.value="Продолжить";
+       }
+   }
+}
+
+
+
+function New_Game() //Новая игра
+{
+       for(var i=0;i<150;i++) // Очищаем игровое поле
+       {
+        document.getElementById("block"+(i+1)).parentNode.removeChild(document.getElementById("block"+(i+1)));  
+       }
+       
+       // Устанавливаем начальные значения
+       seconds=-1;
+       document.getElementById("timer").value="01:00";
+       document.getElementById("start").value="Старт";
+       document.getElementById("pts").value=points=0;
+	  
+}
+function Click(id)//Нажатие на кубик
+{
+     var blockColor=document.getElementById(id);
+     var btn=document.getElementById("start").value;
+     var counter = document.getElementById("timer"); 
+      // Добавление очков
+      
+      if(blockColor.style.backgroundColor!="white" && btn!="Продолжить" && seconds>=0) 
+      {
+         switch(blockColor.style.backgroundColor) 
+	       {
+	         case "red":points+=5;break;
+	         case "green":points+=10;break;
+	         case "blue":points+=15;break;
+	         default:break;
+	       }
+        document.getElementById("pts").value=points;
+	
+	//Проверка надписи на кубиках 
+	
+	       if(blockColor.innerHTML!="") 
+	       {
+	           seconds+=parseInt(blockColor.innerHTML);
+             blockColor.innerHTML="";
+	           if(blockColor.innerHTML!="0")
+	           {
+                  counter.value = (seconds/60 < 10 ? "0" : "") + String(parseInt(seconds/60))+ ":"+
+		                  (seconds%60 < 10 ? "0" : "") + String(seconds%60);
+             }
+	     
+             if(seconds<5&&blockColor.innerHTML.includes("-")==true) //Когда кол-во отнимаемых секунд больше чем оставшееся время
+             {
+	             counter.value="00:00";
+             }	     
+	       }
+	 
+        blockColor.style.backgroundColor="white";
+	      blockColor.style.border="2px solid white";
+	
+        Removed.push(id);
+	
+      }
+}
+function Timer()//Таймер 
+{
+    var StartPause=document.getElementById("start");
+    
+    
+    var gameOverDiv=document.getElementById("EnterName");
+    var score=document.getElementById("result");
+    
+    function tick() 
+    {
+        var counter = document.getElementById("timer");
+	
+        if(seconds>0&&StartPause.value=="Пауза") // Обратный отсчёт
+	       {
+	         seconds--;
+           counter.value = (seconds/60 < 10 ? "0" : "") + String(parseInt(seconds/60))+ ":"+ (seconds%60 < 10 ? "0" : "") +
+	         String(seconds%60);
+	       }
+	
+        if( seconds >= 0 ) // Обратный отсчёт, если время не закончилось
+	      {
+            setTimeout(tick, 1000);
+        }
+	
+	      if(seconds==0) // Конец игры
+	      {
+	       document.getElementById("timer").value="00:00";
+        var TableResult=document.getElementById("record");
+
+        var PlayerName = prompt("Очки: "+String(parseInt(points))+"\nВведите свое имя:");
+        if(PlayerName.length!=0)
+        {
+          TableResult.innerHTML+=" <br/> "+PlayerName+": "+points;
+		  New_Game();
+          }
+          else 
+          {
+          TableResult.innerHTML+=" <br/> Player"+ ++NamelessPlayerCount +": "+points;
+          }
+	         seconds=-1;
+        }
+	
+	   if(seconds%6==0 && Removed.length>=2 && StartPause.value=="Пауза") // Добавление новых кубиков во время игры
+	   {
+	
+	     for(var i=0;i<Math.round(Math.random()*3);i++)
+	     {
+	       var ind=Math.round(Math.random()*Removed.length);
+	       var blockColor=document.getElementById(Removed[ind]);
+	       if(blockColor.style.backgroundColor=="white")
+	       {
+              blockColor.style.backgroundColor=Color[Math.round(Math.random()*4)];
+	            blockColor.style.border="2px solid white";
+              Removed.splice(ind,1);
+	    
+	       }
+	    
+	     }
+	  
+	   }
+	  
+
+    }
+    
+    if(seconds>=0) // Обратный отсчёт, если время не закончилось
+    {
+       tick();
+    }
+}
+
+</script>
+
+</head>
+<body>
+ 
+<h1>Убери кубики</h1>
+<br/>
+
+<div class="buttons" >
+<form id="forma" method="GET">
+<input type="button" value="Старт" id="start" onclick="Start()"/>
+<input type="button" value="Новая игра" id="_New_Game" onclick="New_Game()"/>
+</form>
+</div>
+
+<div class="info">
+<label>Очки</label>
+<input id="pts" type="text" value="0" size="5" readonly>
+<label>Таймер</label>
+<input type="text" value="01:00" size="5" id="timer" readonly>
+
+</div>
+<div class="field" id="field_id"> </div>
+<div id="record"><b>Результаты</b><br/>
+</div>
+</body>
+</html>
